@@ -62,32 +62,19 @@ def queryRedditData():
             print(" pzsw数据库连接已关闭")
 
 
-# http://127.0.0.1:10000/api/tasks/queryRedditBeauty
-@app.route("/api/tasks/queryRedditBeauty", methods=["GET"])
-def queryRedditBeauty():
+# http://127.0.0.1:10000/api/tasks/queryRedditLists
+@app.route("/api/tasks/queryRedditLists", methods=["GET"])
+def queryRedditLists():
     try:
-        print(f"\n📅 开始抓取：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-
-        # 建立ccyzb数据库连接
-        db_conn_ccyzb = connect_topccyzb_db()
-        db_cursor_ccyzb = db_conn_ccyzb.cursor()
-
-        # ccyzb
-        all_infos = []
-
-        for category in ["ClassyAsianBeauties", "TastyKoreanGirls", "KoreanBeauties"]:
-            posts = fetch_ccyzb_subreddit_posts(subreddit_name=category, limit=20)
-            infos = handle_posts(posts, category)
-            all_infos.extend(infos)
-
-        # 批量写入数据库
-        if all_infos:
-            insert_ccyzb_multiple_info(db_cursor_ccyzb, all_infos)
-            db_conn_ccyzb.commit()
-
-        print("✅ ccyzb所有数据处理完成")
-
-        return jsonify({"status": "success", "message": "Reddit 数据抓取成功"})
+        
+        # 建立pzsw数据库连接
+        db_conn_pzsw = connect_topzsw_db()
+        db_cursor_pzsw = db_conn_pzsw.cursor()
+        # 查询数据
+        db_cursor_pzsw.execute("SELECT * FROM RedditLists ORDER BY save_time DESC LIMIT 100")
+        rows = db_cursor_pzsw.fetchall()
+        
+        return rows
     except Exception as e:
         print(f"❌ 整体处理失败：{e}")
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -106,11 +93,6 @@ def fetch_pzsw_posts_by_type(category, limit=20):
         return reddit_read_only.front.best(limit=limit)
     elif category == "controversial":
         return reddit_read_only.front.controversial(time_filter="day", limit=limit)
-
-
-def fetch_ccyzb_subreddit_posts(subreddit_name, limit=20):
-    subreddit = reddit_read_only.subreddit(subreddit_name)
-    return subreddit.new(limit=limit)
 
 
 def handle_posts(posts, category_name):
@@ -196,29 +178,6 @@ def insert_pzsw_multiple_info(cursor, infos):
              VALUES (%s, %s, %s, %s, %s, %s, %s)"""
     cursor.executemany(sql, infos)
     print(f"✅ 成功插入pzsw {len(infos)} 条数据")
-
-
-def connect_topccyzb_db():
-    return pymysql.connect(
-        host='112.124.47.33',
-        port=3306,
-        user='mayintao',
-        password='Mayt@123',
-        database='cyz_apps',
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor
-    )
-
-
-def insert_ccyzb_multiple_info(cursor, infos):
-
-    sql = """INSERT IGNORE INTO RedditLists 
-                 (save_time, object_id, title, name, image_url) 
-                 VALUES (%s, %s, %s, %s, %s)"""
-
-    cursor.executemany(sql, infos)
-    print(f"✅ 成功插入 ccyzb {len(extended_infos)} 条数据")
-
 
 def clean_title_for_db(title):
     cleaned = re.sub(r"[^\w\s\u4e00-\u9fff。，、！？：“”‘’《》（）()\-.,!?\"']", '', title)
