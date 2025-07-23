@@ -211,18 +211,12 @@ def connect_topccyzb_db():
 
 
 def insert_ccyzb_multiple_info(cursor, infos):
-    # 为每条数据随机生成 beauty 和 age，并组合到最终值里
-    extended_infos = []
-    for info in infos:
-        beauty = random.randint(80, 120)
-        age = random.randint(18, 28)
-        extended_infos.append(info + (beauty, age))
 
-    sql = """INSERT IGNORE INTO FaceResultObject 
-                 (save_time, object_id, title, name, image_url, user_ip, isCanRelease, beauty, age) 
-                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+    sql = """INSERT IGNORE INTO RedditLists 
+                 (save_time, object_id, title, name, image_url) 
+                 VALUES (%s, %s, %s, %s, %s)"""
 
-    cursor.executemany(sql, extended_infos)
+    cursor.executemany(sql, infos)
     print(f"✅ 成功插入 ccyzb {len(extended_infos)} 条数据")
 
 
