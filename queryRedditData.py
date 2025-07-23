@@ -191,7 +191,7 @@ def connect_topzsw_db():
 
 
 def insert_pzsw_multiple_info(cursor, infos):
-    sql = """INSERT IGNORE INTO QuestionLists 
+    sql = """INSERT IGNORE INTO RedditLists 
              (save_time, object_id, title, user_name, native_image_url, user_ip, isCanRelease) 
              VALUES (%s, %s, %s, %s, %s, %s, %s)"""
     cursor.executemany(sql, infos)
