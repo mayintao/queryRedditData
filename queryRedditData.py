@@ -62,9 +62,9 @@ def queryRedditData():
             print(" pzsw数据库连接已关闭")
 
 
-# http://127.0.0.1:10000/api/tasks/queryRedditLists
-@app.route("/api/tasks/queryRedditLists", methods=["GET"])
-def queryRedditLists():
+# http://127.0.0.1:10000/api/tasks/getRedditLists
+@app.route("/api/tasks/getRedditLists", methods=["GET"])
+def getRedditLists():
     try:
         
         # 建立pzsw数据库连接
